@@ -134,8 +134,9 @@ def make_skip(needle):
 
 
 def print_test_graph(settings):
-    """Построить и вывести граф из тестового файла (этап 3)."""
+    """Построить и вывести граф из тестового файла (этапы 3-4)."""
     from depgraph.graph import dfs_recursive, load_test_repo
+    from depgraph.reverse import reverse_deps
     graph = load_test_repo(settings["repo"])
     if settings["filter"]:
         skip = make_skip(settings["filter"])
@@ -152,6 +153,10 @@ def print_test_graph(settings):
         print("cycles:")
         for found in cycles:
             print("  " + " -> ".join(found))
+    print("reverse deps:")
+    for name in reverse_deps(graph, settings["package"],
+                             settings["max_depth"], skip):
+        print("  " + name)
     return 0
 
 
