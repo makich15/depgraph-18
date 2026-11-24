@@ -123,6 +123,38 @@ def format_params(settings):
     return "\n".join(lines)
 
 
+def make_skip(needle):
+    """Построить проверку подстроки фильтра для имён пакетов."""
+
+    def skip(name):
+        """Проверить, что имя содержит подстроку."""
+        return needle in name
+
+    return skip
+
+
+def print_test_graph(settings):
+    """Построить и вывести граф из тестового файла (этап 3)."""
+    from depgraph.graph import dfs_recursive, load_test_repo
+    graph = load_test_repo(settings["repo"])
+    if settings["filter"]:
+        skip = make_skip(settings["filter"])
+    else:
+        skip = None
+    order, cycles = dfs_recursive(settings["package"],
+                                  graph.get,
+                                  settings["max_depth"],
+                                  skip)
+    print("graph order:")
+    for name in order:
+        print("  " + name)
+    if cycles:
+        print("cycles:")
+        for found in cycles:
+            print("  " + " -> ".join(found))
+    return 0
+
+
 def main(argv=None):
     """Точка входа: параметры, затем прямые зависимости (этап 2)."""
     from depgraph.nuget import (
@@ -136,9 +168,8 @@ def main(argv=None):
         print("ошибка: %s" % err)
         return 2
     print(format_params(settings))
-    if settings["test_mode"]:
-        print("ошибка: тестовый режим появится на этапе 3")
-        return 2
+    if settings["test_mode"] and os.path.isfile(settings["repo"]):
+        return print_test_graph(settings)
     try:
         package_id = find_package_id(settings["package"])
         version = settings["version"]
