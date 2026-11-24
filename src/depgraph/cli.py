@@ -1,4 +1,4 @@
-"""Разбор и проверка опций командной строки (этап 1).
+"""Разбор и проверка опций командной строки (этапы 1-2).
 
 Параметры: имя пакета, адрес репозитория или путь к файлу,
 режим тестового репозитория, версия пакета, максимальная
@@ -125,10 +125,34 @@ def format_params(settings):
 
 def main(argv=None):
     """Точка входа: параметры, затем прямые зависимости (этап 2)."""
+    from depgraph.nuget import (
+        direct_dependencies,
+        find_package_id,
+        known_versions,
+    )
     try:
         settings = validate(parse_args(argv))
     except ConfigError as err:
         print("ошибка: %s" % err)
         return 2
     print(format_params(settings))
+    if settings["test_mode"]:
+        print("ошибка: тестовый режим появится на этапе 3")
+        return 2
+    try:
+        package_id = find_package_id(settings["package"])
+        version = settings["version"]
+        if not version:
+            versions = known_versions(package_id)
+            if not versions:
+                raise ConfigError("у пакета нет версий")
+            version = versions[-1]
+            print("version=%s" % version)
+        deps = direct_dependencies(package_id, version)
+    except (OSError, ValueError, KeyError, ConfigError) as err:
+        print("ошибка: %s" % err)
+        return 1
+    print("dependencies:")
+    for name in deps:
+        print("  " + name)
     return 0
