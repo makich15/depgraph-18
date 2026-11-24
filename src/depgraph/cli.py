@@ -134,8 +134,9 @@ def make_skip(needle):
 
 
 def print_test_graph(settings):
-    """Построить и вывести граф из тестового файла (этапы 3-4)."""
+    """Построить и вывести граф из тестового файла (этапы 3-5)."""
     from depgraph.graph import dfs_recursive, load_test_repo
+    from depgraph.mermaid import describe
     from depgraph.reverse import reverse_deps
     graph = load_test_repo(settings["repo"])
     if settings["filter"]:
@@ -157,6 +158,8 @@ def print_test_graph(settings):
     for name in reverse_deps(graph, settings["package"],
                              settings["max_depth"], skip):
         print("  " + name)
+    print("mermaid:")
+    print(describe(graph))
     return 0
 
 

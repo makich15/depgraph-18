@@ -38,6 +38,57 @@ CLI-инструмент визуализации графа зависимос�
   в обозревателе NuGet): состав совпадает, расхождения возможны
   в опциональных зависимостях и сортировке.
 
+На **этапе 5** реализованы:
+
+- текстовое описание графа на языке диаграмм Mermaid (`graph TD`,
+  стрелки `A-->B`) и вывод его на экран;
+- примеры визуализации для трёх пакетов — ниже в разделе
+  «Примеры использования»;
+- сравнение со штатными средствами (`nuget list`, обозреватель
+  пакетов NuGet): состав рёбер совпадает, расхождения — только
+  в оформлении.
+
+## Примеры использования
+
+Визуализация графа из тестового файла:
+
+```sh
+PYTHONPATH=src python3 -m depgraph --package A \
+  --repo tests/testdata/branch.txt --test-mode on
+```
+
+Вывод содержит порядок обхода, обратные зависимости и Mermaid-описание:
+
+```text
+graph order:
+  A
+  B
+  D
+  C
+reverse deps:
+  A
+mermaid:
+graph TD
+    A-->B
+    A-->C
+    B-->D
+    C-->D
+```
+
+Циклический граф:
+
+```sh
+PYTHONPATH=src python3 -m depgraph --package A \
+  --repo tests/testdata/cycle.txt --test-mode on
+```
+
+Линейная цепочка:
+
+```sh
+PYTHONPATH=src python3 -m depgraph --package A \
+  --repo tests/testdata/chain.txt --test-mode on
+```
+
 ## Запуск тестов
 
 ```sh
